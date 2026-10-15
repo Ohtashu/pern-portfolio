@@ -1,0 +1,43 @@
+:root {
+    color-scheme: light;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.14 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0 0);
+}
+
+.dark {
+    color-scheme: dark;
+    --backgrond: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+}
+
+
+{/* -- Separator -- */}
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr);
+    margin: 0 auto;
+    max-width: 1080px;
+    min-height: 620px;
+    padding: clamp(4rem, 9vw, 9rem) clamp(1.25rem, 7vw, 7rem);
+}
+.hero-div {
+    align-self: center;
+    max-width: 680px;
+}
+h1, h2, h3, p {
+    margin-top: 0;
+}
+h1, h2 {
+    letter-spacing: -.06em;
+    line-height: .95;
+}
+h1 {
+    font-size: clamp(3.5rem, 8vw, 7.7rem);
+    margin-bottom: 2rem;
+    max-width: 850px;
+}
+
