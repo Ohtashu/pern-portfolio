@@ -4,8 +4,8 @@
     --foreground: oklch(0.14 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.15 0 0);
+    --accent: oklch(0.269 0 0);
 }
-
 .dark {
     color-scheme: dark;
     --backgrond: oklch(0.145 0 0);
@@ -39,5 +39,11 @@ h1 {
     font-size: clamp(3.5rem, 8vw, 7.7rem);
     margin-bottom: 2rem;
     max-width: 850px;
+}
+em {
+    color: var(--accent);
+    font-family: Georgia, Serif;
+    font-weight: 400;
+
 }
 

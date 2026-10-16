@@ -56,6 +56,9 @@ header {
     margin-bottom: 2rem;
     flex-grow: 1;
 }
+.work-card {
+    border-top: 1px solid var(--ink);
+}
 .project-footer {
     align-items: center;
     display: flex;
@@ -73,4 +76,5 @@ header {
         background: var(--background);
     }
 }
+
 
