@@ -1,80 +1,405 @@
-:root {
-    --ink: #18202b;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted-ink: #69717d;
-}
-.card img {
+/* ==========================================================================
+   APP LAYOUT & HEADER STYLING
+   ========================================================================== */
 
-}
-header {
-    align-items: center;
-    border-bottom: 1px solid var(--ink);
-    display: flex;
-    gap: 2rem;
-    justify-content: space-between;
-    margin: 0 auto;
-    max-width: 1440px;
-    padding: 1.25rem clamp(1.25rem, 4vw, 4rem);
-}
-.card {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    align-items: center;
-}
-.card img{
-    height: 4rem;
-    display: block;
-    max-width: 4rem;
-    border-radius: 4rem;
-}
-.project-grid {
-    display: grid;
-    gap: 2rem 1rem;
-    grid-template-columns: repeat(3, 1fr);
-}
-.project-card {
-    border-top: 1px solid var(--ink);
-    padding-top: 1.5rem;
+/* Main page wrapper */
+main {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
-.project-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: .6rem;
+
+/* Site top header bar */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1440px;
+    padding: 1.25rem clamp(1.25rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
 }
+
+/* Profile branding card in header */
+.card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+/* Profile avatar image styling with border and smooth hover transition */
+.card img {
+    width: 2.75rem;
+    height: 2.75rem;
+    max-width: 2.75rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card:hover img {
+    transform: scale(1.05);
+    border-color: var(--accent);
+}
+
+.card h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   TICKER / MARQUEE BANNER STYLES
+   ========================================================================== */
+/* FIX: Added missing styles for the promotional/skills ticker banner */
+.banner {
+    width: 100%;
+    background-color: var(--ink);
+    color: var(--background);
+    overflow: hidden;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.banner-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+}
+
+.banner-tracker span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.banner-tracker span::after {
+    content: "•";
+    color: var(--accent);
+    margin-left: 1.5rem;
+}
+
+.banner-tracker span:last-of-type::after {
+    display: inline;
+}
+
+/* ==========================================================================
+   GENERIC SECTION & HEADING STYLES
+   ========================================================================== */
+.section {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1440px;
+    padding: clamp(3.5rem, 7vw, 6.5rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+/* Section heading layout with title on the left and introductory note on the right */
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 3.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.eyebrow {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.section-note {
+    max-width: 480px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--muted-ink);
+}
+
+/* ==========================================================================
+   PROJECTS SECTION & CARDS
+   ========================================================================== */
+/* Grid layout for featured GitHub projects */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+/* FIX: Added complete styling for .project-card to match the corrected JSX tag */
+.project-card {
+    background-color: var(--card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+}
+
+.project-card h3 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+}
+
 .project-card p {
     color: var(--muted-ink);
-    line-height: 1.55;
+    line-height: 1.6;
+    font-size: 0.95rem;
     margin-bottom: 2rem;
     flex-grow: 1;
 }
-.work-card {
-    border-top: 1px solid var(--ink);
-}
+
+/* Project card footer containing tech badges and external link icon */
 .project-footer {
-    align-items: center;
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
     margin-top: auto;
 }
-.section {
-    margin: 0 auto;
-    max-width: 1440px;
-    padding: clamp(4rem, 8vw, 8rem) clamp(1.25rem, 7vw, 7rem);
 
+/* Language and tech tag badges */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
-@media screen and  (max-width: 767px) {
-    main {
-        background: var(--background);
+
+.tag-list span {
+    display: inline-block;
+    background-color: var(--tag-bg);
+    color: var(--tag-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+}
+
+/* Icon link button for viewing GitHub projects */
+.project-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background-color: var(--tag-bg);
+    color: var(--foreground);
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.project-link-btn:hover {
+    background-color: var(--accent);
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+/* Loading & error indicators */
+.loading-indicator,
+.error-indicator {
+    padding: 2rem;
+    text-align: center;
+    border-radius: 0.75rem;
+    background: var(--tag-bg);
+    grid-column: 1 / -1;
+    color: var(--muted-ink);
+}
+
+.error-indicator {
+    color: #ef4444;
+}
+
+/* ==========================================================================
+   EXPERIENCE SECTION & WORK CARDS
+   ========================================================================== */
+/* FIX: Added styles for experience header and structured list of work cards */
+.experience-section {
+    background-color: transparent;
+}
+
+.experience-header {
+    margin-bottom: 2.5rem;
+}
+
+.experience-section-note {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+    max-width: 620px;
+}
+
+/* Container for experience cards */
+.main-experience {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+/* Individual work experience card styling */
+.work-card {
+    background-color: var(--card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2.25rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.work-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+}
+
+/* Card index number badge */
+.card-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+}
+
+.work-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.35rem;
+}
+
+.work-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted-ink);
+    margin-bottom: 1.25rem;
+}
+
+.work-card p {
+    color: var(--muted-ink);
+    line-height: 1.65;
+    font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   SKILLS SECTION & CARDS
+   ========================================================================== */
+/* FIX: Added styles for skill cards and skills grid */
+.skills-container {
+    background-color: transparent;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.skill-card {
+    background-color: var(--card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2.25rem;
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.skill-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+}
+
+.skill-card h3 {
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.skill-card p {
+    font-size: 1rem;
+    color: var(--muted-ink);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   FOOTER SECTION
+   ========================================================================== */
+/* FIX: Added clean footer styling */
+.footer-section {
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
+    padding: 2.5rem clamp(1.25rem, 5vw, 4rem);
+    text-align: center;
+}
+
+.footer-section p {
+    font-size: 0.9rem;
+    color: var(--muted-ink);
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+/* Tablet Breakpoint (max-width: 1024px) */
+@media screen and (max-width: 1024px) {
+    .project-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
+/* Mobile Breakpoint (max-width: 768px) */
+@media screen and (max-width: 768px) {
+    header {
+        padding: 1rem 1.25rem;
+    }
 
+    .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .project-grid,
+    .main-experience,
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .banner-tracker {
+        gap: 1.25rem;
+        font-size: 0.8rem;
+    }
+}
