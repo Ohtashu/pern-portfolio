@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/navigationBar.jsx";
 import { ArrowUpRight } from "lucide-react";
+import {supabase} from '/utils/supabase.js';
 import "./App.css";
 
 // Static profile asset
@@ -14,23 +15,6 @@ const skillList = [
     { number: "02", title: "Backend", details: "Node.js, Express.js, JavaScript, PostgreSQL", level: "01" },
 ];
 
-const workList = [
-    {
-        number: "01",
-        title: "MHACTO-BOCAUE",
-        role: "Web Developer",
-        description:
-            "Built platform features with Next.js, React, Tailwind CSS, \nPHP, and custom REST APIs. Used AI-assisted tools \nthoughtfully to move from idea to working feature.",
-    },
-    {
-        number: "02",
-        title: "Paraiso360",
-        role: "Quality Assurance",
-        description:
-            "Worked across research, interface design, and \nimplementation to make a useful product from a blank \npage.",
-    },
-];
-
 // FIX: Moved static filter list outside component to keep useEffect dependencies pure
 const featuredProjects = ["Paw-Active", "Mythspire", "WinLix-Util"];
 
@@ -38,8 +22,48 @@ export default function App() {
     const [repos, setRepos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [fetchError, setFetchError] = useState(false);
+    const [projects, setProjects] = useState([]);
+    const [theme, setTheme] = useState(() => {
+        try {
+            const savedTheme = window.localStorage.getItem("portfolio-theme");
+            if (savedTheme === "light" || savedTheme === "dark") {
+                return savedTheme;
+            }
+        } catch {
+            // Continue with the system preference when storage is unavailable.
+        }
+
+        return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    });
 
     useEffect(() => {
+        document.documentElement.classList.toggle("dark", theme === "dark");
+
+        try {
+            window.localStorage.setItem("portfolio-theme", theme);
+        } catch {
+            // The selected theme remains active for the current page view.
+        }
+    }, [theme]);
+
+    useEffect(() => {
+
+        async function getProjects() {
+            const {data, error} = await supabase
+                .from('project')
+                .select();
+
+            if (error) {
+                console.error('Error fetching project:', error);
+                return
+            }
+
+            if (data) {
+                setProjects(data);
+            }
+        }
+        getProjects();
+
         const getGithubRepos = async () => {
             try {
                 setIsLoading(true);
@@ -72,7 +96,10 @@ export default function App() {
                     <img src={profileImg} alt="Juan Carlos A. Flores profile" />
                     <h2>Juan Carlos A. Flores</h2>
                 </div>
-                <Navbar />
+                <Navbar
+                    isDarkMode={theme === "dark"}
+                    onThemeToggle={() => setTheme((currentTheme) => currentTheme === "dark" ? "light" : "dark")}
+                />
             </header>
 
             {/* FIX: Hero Section - removed invalid 'arian-hidden' and added the second grid column (.hero-media) */}
@@ -91,7 +118,7 @@ export default function App() {
                         <a href="#work" className="btn-primary">
                             Explore my Work
                         </a>
-                        <a href="#experience" className="btn-secondary">
+                        <a href="#about" className="btn-secondary">
                             More about me
                         </a>
                     </div>
@@ -132,16 +159,15 @@ export default function App() {
                         <div className="loading-indicator">No featured projects found.</div>
                     )}
 
-                    {/* FIX: Changed className from 'project-grid' to 'project-card' so CSS card styles take effect */}
                     {!isLoading &&
                         repos.map((repo) => (
-                            <article className="project-card" key={repo.id}>
-                                <h3>{repo.name}</h3>
-                                <p>{repo.description || "No description provided."}</p>
+                            <article className="project-card" key={projects.projectID}>
+                                <h3>{projects.project_title}</h3>
+                                <p>{projects.description || "No description provided."}</p>
 
                                 <div className="project-footer">
                                     <div className="tag-list">
-                                        <span>{repo.language || "Code"}</span>
+                                        <span>{projects.language || "Code"}</span>
                                     </div>
 
                                     {/* FIX: Added .project-link-btn class for consistent circular button styling */}
@@ -175,7 +201,7 @@ export default function App() {
                 </p>
 
                 <div className="main-experience">
-                    {workList.map((work) => (
+                    {projects.map((work) => (
                         <div key={work.number} className="work-card">
                             {/* FIX: Corrected data property binding from work.experience to work.number */}
                             <span className="card-number">{work.number}</span>
@@ -207,8 +233,26 @@ export default function App() {
                 </div>
             </section>
 
-            {/* FIX: Added About/Footer section matching navigation target #about */}
-            <footer className="footer-section" id="about">
+            <section className="section about-section" id="about" aria-labelledby="about-title">
+                <div className="about-heading">
+                    <p className="eyebrow">A little about me</p>
+                    <h2 id="about-title">Ideas made clear, useful, and human.</h2>
+                </div>
+                <div className="about-content">
+                    <p>
+                        I&apos;m Juan Carlos A. Flores, a web developer who enjoys turning ideas into
+                        meaningful digital experiences. I work across frontend and backend, building
+                        with React, JavaScript, Node.js, Express, and PostgreSQL.
+                    </p>
+                    <p>
+                        I care about user-centered design, clear communication, and continuous
+                        learning. With every project, I aim to make the experience thoughtful and
+                        leave the codebase kinder than I found it.
+                    </p>
+                </div>
+            </section>
+
+            <footer className="footer-section">
                 <p>© {currentYear} Juan Carlos A. Flores. Built with React & Vite.</p>
             </footer>
         </main>

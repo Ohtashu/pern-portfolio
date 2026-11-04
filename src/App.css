@@ -354,6 +354,30 @@ header {
     line-height: 1.6;
 }
 
+/* ========================================================================== 
+   ABOUT SECTION
+   ========================================================================== */
+.about-section {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: clamp(2rem, 7vw, 7rem);
+    border-top: 1px solid var(--border-color);
+}
+
+.about-heading h2 {
+    max-width: 600px;
+    margin-bottom: 0;
+}
+
+.about-content {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 650px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
 /* ==========================================================================
    FOOTER SECTION
    ========================================================================== */
@@ -394,7 +418,8 @@ header {
 
     .project-grid,
     .main-experience,
-    .skills-grid {
+    .skills-grid,
+    .about-section {
         grid-template-columns: 1fr;
     }
 
