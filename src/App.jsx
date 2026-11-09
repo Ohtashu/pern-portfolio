@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/navigationBar.jsx";
 import { ArrowUpRight } from "lucide-react";
-import {supabase} from '/utils/supabase.js';
+import { isSupabaseConfigured, supabase } from "/utils/supabase.js";
 import "./App.css";
 
 // Static profile asset
@@ -15,14 +15,29 @@ const skillList = [
     { number: "02", title: "Backend", details: "Node.js, Express.js, JavaScript, PostgreSQL", level: "01" },
 ];
 
-// FIX: Moved static filter list outside component to keep useEffect dependencies pure
-const featuredProjects = ["Paw-Active", "Mythspire", "WinLix-Util"];
+const defaultExperienceList = [
+    {
+        number: "01",
+        title: "Web Development",
+        role: "Frontend & Backend",
+        description: "Building across frontend and backend with React, JavaScript, Node.js, Express, and PostgreSQL.",
+    },
+];
+
+function getSafeProjectUrl(value) {
+    try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+    } catch {
+        return null;
+    }
+}
 
 export default function App() {
-    const [repos, setRepos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [fetchError, setFetchError] = useState(false);
+    const [fetchError, setFetchError] = useState("");
     const [projects, setProjects] = useState([]);
+    const [experiences, setExperiences] = useState([]);
     const [theme, setTheme] = useState(() => {
         try {
             const savedTheme = window.localStorage.getItem("portfolio-theme");
@@ -47,46 +62,57 @@ export default function App() {
     }, [theme]);
 
     useEffect(() => {
+        let isActive = true;
 
-        async function getProjects() {
-            const {data, error} = await supabase
-                .from('project')
-                .select();
+        async function loadPortfolioData() {
+            try {
+                if (!isSupabaseConfigured || !supabase) {
+                    throw new Error("Supabase environment variables are missing.");
+                }
 
-            if (error) {
-                console.error('Error fetching project:', error);
-                return
-            }
+                const [projectsRes, experienceRes] = await Promise.all([
+                    supabase.from("projects").select(),
+                    supabase.from("experience").select().order("experienceid", { ascending: true }),
+                ]);
 
-            if (data) {
-                setProjects(data);
+                if (projectsRes.error) {
+                    throw projectsRes.error;
+                }
+
+                if (isActive) {
+                    setProjects(projectsRes.data ?? []);
+                    if (!experienceRes.error && experienceRes.data && experienceRes.data.length > 0) {
+                        setExperiences(experienceRes.data);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch portfolio data", error);
+                if (isActive) {
+                    setFetchError(isSupabaseConfigured
+                        ? "Unable to load projects. Check the Supabase public.projects table and access policies."
+                        : "Projects are unavailable. Configure VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+                }
+            } finally {
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         }
-        getProjects();
 
-        const getGithubRepos = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("https://api.github.com/users/ohtashu/repos");
-                if (!response.ok) {
-                    throw new Error(`GitHub API error: ${response.status}`);
-                }
-                const toScript = await response.json();
-
-                const filtered = toScript.filter(
-                    (repo) => !repo.fork && featuredProjects.includes(repo.name)
-                );
-                setRepos(filtered);
-            } catch (error) {
-                console.error("Failed to fetch repos", error);
-                setFetchError(true);
-            } finally {
-                setIsLoading(false);
-            }
+        loadPortfolioData();
+        return () => {
+            isActive = false;
         };
-
-        getGithubRepos();
     }, []);
+
+    const displayedExperiences = experiences.length > 0
+        ? experiences.map((exp, index) => ({
+            number: String(index + 1).padStart(2, "0"),
+            title: exp.title || "Untitled Experience",
+            role: exp.job_title || exp.role || "",
+            description: exp.details || exp.description || "",
+        }))
+        : defaultExperienceList;
 
     return (
         <main>
@@ -136,7 +162,7 @@ export default function App() {
 
             {/* Selected Projects / Work Section */}
             <section className="section work-section" id="work" aria-labelledby="work-title">
-                <div className="section-heading">
+                <div className="work-header">
                     <div>
                         <p className="eyebrow">Selected projects / 2026</p>
                         <h2 id="work-title">Things I&apos;ve made</h2>
@@ -147,42 +173,48 @@ export default function App() {
                     </p>
                 </div>
 
-                <div className="project-grid">
-                    {/* FIX: Added loading and error UI fallback handling */}
+                <div className="project-scroll-container">
                     {isLoading && <div className="loading-indicator">Loading featured projects...</div>}
                     {fetchError && (
                         <div className="error-indicator">
-                            Unable to load GitHub repositories at this moment.
+                            {fetchError}
                         </div>
                     )}
-                    {!isLoading && !fetchError && repos.length === 0 && (
+                    {!isLoading && !fetchError && projects.length === 0 && (
                         <div className="loading-indicator">No featured projects found.</div>
                     )}
 
-                    {!isLoading &&
-                        repos.map((repo) => (
-                            <article className="project-card" key={projects.projectID}>
-                                <h3>{projects.project_title}</h3>
-                                <p>{projects.description || "No description provided."}</p>
+                    {!isLoading && !fetchError && projects.map((project, index) => {
+                        const projectUrl = getSafeProjectUrl(project.demo_url) || getSafeProjectUrl(project.repo_url);
+                        const projectTitle = project.name || "Untitled project";
+                        const projectNumber = String(index + 1).padStart(2, "0");
+
+                        return (
+                            <article className="project-card" key={project.id ?? projectTitle}>
+                                <span className="card-number">{projectNumber}</span>
+                                <h3>{projectTitle}</h3>
+                                <p>{project.description || "No description provided."}</p>
 
                                 <div className="project-footer">
                                     <div className="tag-list">
-                                        <span>{projects.language || "Code"}</span>
+                                        <span>{project.language || "Code"}</span>
                                     </div>
 
-                                    {/* FIX: Added .project-link-btn class for consistent circular button styling */}
-                                    <a
-                                        href={repo.html_url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="project-link-btn"
-                                        aria-label={`View ${repo.name} repository on GitHub`}
-                                    >
-                                        <ArrowUpRight size={18} />
-                                    </a>
+                                    {projectUrl && (
+                                        <a
+                                            href={projectUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="project-link-btn"
+                                            aria-label={`View ${projectTitle}`}
+                                        >
+                                            <ArrowUpRight size={18} />
+                                        </a>
+                                    )}
                                 </div>
                             </article>
-                        ))}
+                        );
+                    })}
                 </div>
             </section>
 
@@ -201,7 +233,7 @@ export default function App() {
                 </p>
 
                 <div className="main-experience">
-                    {projects.map((work) => (
+                    {displayedExperiences.map((work) => (
                         <div key={work.number} className="work-card">
                             {/* FIX: Corrected data property binding from work.experience to work.number */}
                             <span className="card-number">{work.number}</span>

@@ -138,13 +138,62 @@ header {
 }
 
 /* ==========================================================================
-   PROJECTS SECTION & CARDS
+   PROJECTS SECTION & CARDS (SPLIT LAYOUT WITH SCROLLABLE CONTENT)
    ========================================================================== */
-/* Grid layout for featured GitHub projects */
-.project-grid {
+.work-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+    gap: clamp(2rem, 5vw, 5rem);
+}
+
+.work-header {
+    position: sticky;
+    top: 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.work-header h2 {
+    margin-bottom: 0.5rem;
+}
+
+.work-header .section-note {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--muted-ink);
+}
+
+/* Scrollable container on the right side for projects */
+.project-scroll-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* Custom scrollbar styling for webkit browsers */
+.project-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.project-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.project-scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 9999px;
+}
+
+.project-scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-ink);
 }
 
 /* FIX: Added complete styling for .project-card to match the corrected JSX tag */
@@ -157,6 +206,7 @@ header {
     flex-direction: column;
     justify-content: space-between;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    will-change: transform;
 }
 
 .project-card:hover {
@@ -399,8 +449,8 @@ header {
    ========================================================================== */
 /* Tablet Breakpoint (max-width: 1024px) */
 @media screen and (max-width: 1024px) {
-    .project-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .work-section {
+        gap: 3rem;
     }
 }
 
@@ -416,11 +466,19 @@ header {
         gap: 1rem;
     }
 
-    .project-grid,
+    .work-section,
     .main-experience,
     .skills-grid,
     .about-section {
         grid-template-columns: 1fr;
+    }
+
+    .work-header {
+        position: static;
+    }
+
+    .project-scroll-container {
+        max-height: 480px;
     }
 
     .banner-tracker {

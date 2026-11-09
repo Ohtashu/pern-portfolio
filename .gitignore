@@ -7,18 +7,65 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
+jspm_packages/
+web_modules/
+
+# Production & Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.cache/
+.vite/
+
+# Environment files & Secrets
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Linter & Tooling Caches
+.eslintcache
+.oxlintcache
+.stylelintcache
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Editor directories and files
+.idea/
+*.iml
+*.iws
+*.ipr
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
+*.sublime-workspace
+*.sublime-project
+
+# AI Assistant Caches & Local History
+.aider*
+.ollamassist
+.claude
+.cursor
