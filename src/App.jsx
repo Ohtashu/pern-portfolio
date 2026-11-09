@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from "/utils/supabase.js";
 import "./App.css";
 
 // Static profile asset
-import profileImg from "./assets/profile/wallhaven-lydkg2_1920x1080.png";
+import logoImg from "./assets/logo/logo.jpg";
 
 // Static data lists for skills and work experience
 const currentYear = new Date().getFullYear();
@@ -119,7 +119,7 @@ export default function App() {
             {/* Site Header with profile info and navigation */}
             <header>
                 <div className="card profile-dark">
-                    <img src={profileImg} alt="Juan Carlos A. Flores profile" />
+                    <img src={logoImg} alt="Juan Carlos A. Flores logo" />
                     <h2>Juan Carlos A. Flores</h2>
                 </div>
                 <Navbar
