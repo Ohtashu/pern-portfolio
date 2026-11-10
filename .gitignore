@@ -28,6 +28,7 @@ out/
 !.env.example
 
 # Testing & Coverage
+tests/
 coverage/
 .nyc_output/
 

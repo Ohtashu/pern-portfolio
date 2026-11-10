@@ -1039,3 +1039,111 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Portfolio-inspired admin interface */
+.admin-page {
+    --background: #d2ceb8;
+    --foreground: #3d3a32;
+    --ink: #3d3a32;
+    --muted-ink: #5c584b;
+    --card: #dcd8c4;
+    --accent: #8c3724;
+    --border-color: rgba(61, 58, 50, .28);
+    --border-light: rgba(61, 58, 50, .16);
+    --tag-bg: rgba(61, 58, 50, .08);
+    --tag-color: #3d3a32;
+    --font-sans: 'Geist', sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+    --shadow-sm: 5px 5px 0 rgba(61, 58, 50, .16);
+    --shadow-md: 5px 5px 0 rgba(61, 58, 50, .22);
+    position: relative;
+    isolation: isolate;
+    overflow-x: clip;
+    font-family: var(--font-sans);
+}
+
+.dark .admin-page {
+    --background: #292821;
+    --foreground: #e0dcc9;
+    --ink: #e0dcc9;
+    --muted-ink: #bcb7a3;
+    --card: #343229;
+    --accent: #e7a58d;
+    --border-color: rgba(224, 220, 201, .3);
+    --border-light: rgba(224, 220, 201, .16);
+    --tag-bg: rgba(224, 220, 201, .08);
+    --tag-color: #e0dcc9;
+    --shadow-sm: 5px 5px 0 rgba(0, 0, 0, .2);
+    --shadow-md: 5px 5px 0 rgba(0, 0, 0, .3);
+}
+
+.admin-page .ambient { z-index: -1; }
+.admin-page .ambient__grid {
+    background-image: linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: .05;
+    animation: admin-grid-drift 9s linear infinite;
+}
+.admin-page .ambient__vignette { box-shadow: inset 0 0 15vw rgba(61, 58, 50, .18); }
+.admin-page .ambient__sweep {
+    background: linear-gradient(transparent, rgba(220, 216, 196, .12), transparent);
+    animation: admin-sweep 11s linear infinite;
+}
+@keyframes admin-grid-drift { to { background-position: 32px 32px; } }
+@keyframes admin-sweep { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+
+.admin-page :is(h1, h2, h3) { color: var(--foreground); font-weight: 400; }
+.admin-page :is(h1, h2) { letter-spacing: .12em; text-transform: uppercase; }
+.admin-page p { color: var(--muted-ink); }
+.admin-page :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.admin-header { background: var(--background); backdrop-filter: none; }
+.admin-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: repeating-linear-gradient(90deg, var(--foreground) 0 3px, transparent 3px 8px);
+    opacity: .45;
+}
+.admin-page :is(.admin-badge, .admin-back-btn, .admin-btn, .admin-tab-btn, .admin-eyebrow, .admin-field, .admin-metric-label, .admin-tag-badge, .admin-freelance-badge, .admin-id-tag, .admin-link-pill, .admin-preview-label) {
+    font-family: var(--font-mono);
+    letter-spacing: .06em;
+}
+.admin-page :is(.admin-badge, .admin-back-btn, .admin-btn, .admin-tab-btn, .admin-metric-label, .admin-preview-label) { text-transform: uppercase; }
+.admin-page :is(.admin-panel, .admin-metric-card, .admin-project-card, .admin-notice, .admin-icon-shield, .admin-restricted-icon, .admin-btn, .admin-btn-icon, .admin-theme-btn, .admin-back-btn, .admin-badge, .admin-user-pill, .admin-tabs, .admin-tab-btn, .admin-tab-badge, .admin-field input, .admin-field textarea, .admin-search-input, .admin-image-preview-box, .admin-preview-frame, .admin-toggle-slider, .admin-toggle-slider::after, .admin-tag-badge, .admin-freelance-badge, .admin-link-pill, .admin-metric-icon) { border-radius: 0; }
+.admin-panel, .admin-metric-card, .admin-project-card { box-shadow: var(--shadow-sm); }
+.admin-login-card { max-width: 480px; box-shadow: var(--shadow-md); }
+.admin-login-header { text-align: left; }
+.admin-login-header::before {
+    content: 'SECURE ACCESS / ADMIN';
+    display: block;
+    margin: -1px -1px 1.5rem;
+    padding: .65rem 1rem;
+    background: var(--foreground);
+    color: var(--background);
+    font: .75rem var(--font-mono);
+    letter-spacing: .12em;
+}
+.admin-login-header h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); letter-spacing: .1em; }
+.admin-icon-shield, .admin-metric-icon { background: var(--tag-bg); color: var(--accent); }
+.admin-page :is(.admin-btn-secondary, .admin-btn-ghost, .admin-tab-btn, .admin-back-btn, .admin-theme-btn, .admin-btn-icon) { border: 1px solid var(--border-color); }
+.admin-page :is(.admin-btn-secondary, .admin-btn-ghost, .admin-tab-btn, .admin-back-btn, .admin-theme-btn, .admin-btn-icon):hover { background: var(--foreground); color: var(--background); }
+.admin-page .admin-tab-btn.admin-tab-active { background: var(--foreground); color: var(--background); box-shadow: none; }
+.admin-page .admin-tab-active .admin-tab-badge { background: var(--background); color: var(--foreground); }
+.admin-page :is(.admin-icon-accent, .admin-freelance-badge) { background: var(--tag-bg); }
+.admin-page :is(.admin-field input, .admin-field textarea, .admin-search-input) { background: var(--background); }
+.admin-page :is(.admin-field input, .admin-field textarea, .admin-search-input):focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.admin-toggle-switch input:focus-visible + .admin-toggle-slider { outline: 2px solid var(--accent); outline-offset: 3px; }
+.admin-user-dot, .admin-status-dot { border-radius: 0; background: var(--accent); }
+.admin-project-card:hover { transform: none; }
+.admin-page :is(.admin-user-email, .admin-card-title) { overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+    .admin-header { flex-wrap: wrap; gap: .75rem; }
+    .admin-header-brand { flex-wrap: wrap; gap: .5rem; }
+    .admin-tabs { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .admin-page *, .admin-page *::before, .admin-page *::after { animation: none !important; transition: none !important; }
+    .admin-page .ambient__sweep { display: none; }
+}

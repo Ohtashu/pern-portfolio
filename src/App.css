@@ -198,6 +198,7 @@ header {
 
 /* FIX: Added complete styling for .project-card to match the corrected JSX tag */
 .project-card {
+    position: relative;
     background-color: var(--card);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
@@ -207,6 +208,21 @@ header {
     justify-content: space-between;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     will-change: transform;
+}
+
+.project-card-open {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.project-card-open:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
 }
 
 .project-card:hover {
@@ -260,6 +276,7 @@ header {
 
 /* Icon link button for viewing GitHub projects */
 .project-link-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -269,6 +286,83 @@ header {
     background-color: var(--tag-bg);
     color: var(--foreground);
     transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.project-modal {
+    margin: auto;
+    width: min(90vw, 600px);
+    max-height: 85vh;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: var(--shadow-md);
+}
+
+.project-modal::backdrop {
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.project-modal-content {
+    position: relative;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.project-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--tag-bg);
+    color: var(--foreground);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.project-modal h2 {
+    padding-right: 2rem;
+    overflow-wrap: anywhere;
+}
+
+.project-modal-image {
+    display: block;
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.project-modal-description,
+.project-modal-documentation {
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.project-modal-documentation {
+    margin-top: 1.5rem;
+}
+
+.project-modal-documentation h3 {
+    margin-bottom: 0.5rem;
+}
+
+.project-modal-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.project-modal-links a:hover {
+    text-decoration: underline;
 }
 
 .project-link-btn:hover {

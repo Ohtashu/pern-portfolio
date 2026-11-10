@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '/utils/supabase.js';
+import { readPortfolioSettings, writePortfolioSettings } from '/utils/portfolio-settings.js';
+import { uploadCv, uploadProjectImage } from '/utils/portfolio-uploads.js';
+import { AmbientBackground } from './components/Ambient.jsx';
+import { useReducedMotion } from './components/portfolioHooks.js';
 import {
     assertAdminUser,
     createProject,
     deleteProject,
     loadAdminProjects,
+    normalizeProjectInput,
     updateProject,
 } from '/utils/admin-projects.js';
 import {
@@ -64,10 +69,78 @@ const emptyExperience = {
 };
 
 function getErrorMessage(error) {
-    return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+    return error?.message || 'Something went wrong. Please try again.';
+}
+
+function SettingsEditor() {
+    const [settings, setSettings] = useState(null);
+    const [error, setError] = useState('');
+    const [notice, setNotice] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [retry, setRetry] = useState(0);
+    const [cvFile, setCvFile] = useState(null);
+    const [cvInputKey, setCvInputKey] = useState(0);
+
+    useEffect(() => {
+        let active = true;
+        readPortfolioSettings(supabase, { throwOnError: true }).then((data) => {
+            if (active) setSettings({ ...data, roles: data.roles.join('\n'), skills: data.skills.join('\n'), toolbox: data.toolbox.join('\n'), social_links: data.social_links.map((link) => `${link.label} | ${link.url}`).join('\n') });
+        }).catch((loadError) => {
+            if (active) setError(`Could not load settings: ${getErrorMessage(loadError)}`);
+        });
+        return () => { active = false; };
+    }, [retry]);
+
+    async function save(event) {
+        event.preventDefault();
+        setSaving(true);
+        setError('');
+        setNotice('');
+        try {
+            const lines = (value) => value.split('\n').map((item) => item.trim()).filter(Boolean);
+            const socialLinks = lines(settings.social_links).map((line) => {
+                const parts = line.split('|');
+                if (parts.length !== 2) throw new Error('Use one social link per line in the format Label | https://example.com.');
+                return { label: parts[0].trim(), url: parts[1].trim() };
+            });
+            let cvUrl = settings.cv_url;
+            if (cvFile) {
+                cvUrl = await uploadCv(supabase, cvFile);
+                setSettings((current) => ({ ...current, cv_url: cvUrl }));
+                setCvFile(null);
+                setCvInputKey((value) => value + 1);
+            }
+            await writePortfolioSettings(supabase, { ...settings, cv_url: cvUrl, roles: lines(settings.roles), skills: lines(settings.skills), toolbox: lines(settings.toolbox), social_links: socialLinks });
+            setNotice('Settings saved.');
+        } catch (saveError) {
+            setError(getErrorMessage(saveError));
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    return <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" className="admin-panel">
+        <h2>Portfolio settings</h2>
+        {error && <div className="admin-notice admin-error" role="alert">{error}</div>}
+        {notice && <div className="admin-notice admin-success" role="status">{notice}</div>}
+        {!settings ? (error ? <button className="admin-btn admin-btn-secondary" type="button" onClick={() => { setError(''); setRetry((value) => value + 1); }}>Retry loading</button> : <p>Loading settings…</p>) :
+            <form onSubmit={save} className="admin-form-sections">
+                <div className="admin-form-grid">
+                    {[
+                        ['name', 'Profile name'], ['intro', 'Intro'], ['location', 'Location'], ['focus', 'Focus'],
+                        ['education', 'Education'], ['email', 'Contact email'], ['cv_url', 'CV URL'],
+                    ].map(([key, label]) => <label className="admin-field" key={key}><span>{label}</span><input type={key === 'email' ? 'email' : key === 'cv_url' ? 'url' : 'text'} value={settings[key]} onChange={(event) => setSettings((current) => ({ ...current, [key]: event.target.value }))} /></label>)}
+                    <label className="admin-field"><span>Upload CV (PDF, max 5 MiB)</span><input key={cvInputKey} type="file" accept=".pdf,application/pdf" disabled={saving} onChange={(event) => setCvFile(event.target.files?.[0] ?? null)} /><small>The selected file is uploaded when you save settings and replaces the CV URL.</small></label>
+                    {[0, 1].map((index) => <label className="admin-field admin-field-wide" key={index}><span>Bio paragraph {index + 1}</span><textarea rows="3" value={settings.bio[index] ?? ''} onChange={(event) => setSettings((current) => ({ ...current, bio: current.bio.map((value, i) => i === index ? event.target.value : value) }))} /></label>)}
+                    {[['roles', 'Roles'], ['skills', 'Skills'], ['toolbox', 'Toolbox'], ['social_links', 'Social links (Label | URL)']].map(([key, label]) => <label className="admin-field admin-field-wide" key={key}><span>{label} — one per line</span><textarea rows="4" value={settings[key]} onChange={(event) => setSettings((current) => ({ ...current, [key]: event.target.value }))} /></label>)}
+                </div>
+                <div className="admin-form-footer"><button className="admin-btn admin-btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save settings'}</button></div>
+            </form>}
+    </section>;
 }
 
 export default function Admin() {
+    const reducedMotion = useReducedMotion();
     const [user, setUser] = useState(null);
     const [authLoading, setAuthLoading] = useState(isSupabaseConfigured);
     const [accessLoading, setAccessLoading] = useState(false);
@@ -80,6 +153,8 @@ export default function Admin() {
     const [editingProjectId, setEditingProjectId] = useState(null);
     const [searchProjectQuery, setSearchProjectQuery] = useState('');
     const [imagePreviewError, setImagePreviewError] = useState(false);
+    const [projectImageFile, setProjectImageFile] = useState(null);
+    const [imageInputKey, setImageInputKey] = useState(0);
 
     // Experiences state
     const [experiences, setExperiences] = useState([]);
@@ -178,14 +253,16 @@ export default function Admin() {
                 }
                 setIsAdmin(true);
 
-                const [loadedProjects, loadedExperiences] = await Promise.all([
-                    loadAdminProjects(supabase).catch(() => []),
-                    loadAdminExperiences(supabase).catch(() => []),
+                const [loadedProjects, loadedExperiences] = await Promise.allSettled([
+                    loadAdminProjects(supabase),
+                    loadAdminExperiences(supabase),
                 ]);
 
                 if (isActive) {
-                    setProjects(loadedProjects);
-                    setExperiences(loadedExperiences);
+                    if (loadedProjects.status === 'fulfilled') setProjects(loadedProjects.value);
+                    if (loadedExperiences.status === 'fulfilled') setExperiences(loadedExperiences.value);
+                    const failures = [loadedProjects, loadedExperiences].filter((result) => result.status === 'rejected');
+                    if (failures.length) setErrorMessage(`Could not load dashboard data: ${failures.map((result) => getErrorMessage(result.reason)).join('; ')}`);
                 }
             } catch (error) {
                 if (isActive) {
@@ -246,6 +323,8 @@ export default function Admin() {
 
     function startEditingProject(project) {
         setEditingProjectId(project.id);
+        setProjectImageFile(null);
+        setImageInputKey((value) => value + 1);
         setImagePreviewError(false);
         setProjectForm({ ...emptyProject, ...project, github_id: project.github_id?.toString() ?? '' });
         setMessage('');
@@ -255,6 +334,8 @@ export default function Admin() {
 
     function resetProjectForm() {
         setEditingProjectId(null);
+        setProjectImageFile(null);
+        setImageInputKey((value) => value + 1);
         setImagePreviewError(false);
         setProjectForm(emptyProject);
     }
@@ -269,11 +350,21 @@ export default function Admin() {
         setErrorMessage('');
         setMessage('');
         try {
+            normalizeProjectInput(projectForm);
+            let input = projectForm;
+            if (projectImageFile) {
+                const imageUrl = await uploadProjectImage(supabase, projectImageFile);
+                input = { ...projectForm, image_url: imageUrl };
+                setProjectForm(input);
+                setImagePreviewError(false);
+                setProjectImageFile(null);
+                setImageInputKey((value) => value + 1);
+            }
             if (editingProjectId) {
-                await updateProject(supabase, editingProjectId, projectForm);
+                await updateProject(supabase, editingProjectId, input);
                 setMessage('Project updated successfully.');
             } else {
-                await createProject(supabase, projectForm);
+                await createProject(supabase, input);
                 setMessage('Project created successfully.');
             }
             setProjects(await loadAdminProjects(supabase));
@@ -417,6 +508,7 @@ export default function Admin() {
 
     return (
         <main className="admin-page">
+            <AmbientBackground reducedMotion={reducedMotion} />
             <header className="admin-header">
                 <div className="admin-header-brand">
                     <a className="admin-back-btn" href="#/" title="Return to portfolio">
@@ -611,7 +703,12 @@ export default function Admin() {
                                 <span>Experience</span>
                                 <span className="admin-tab-badge">{experiences.length}</span>
                             </button>
+                            <button type="button" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected={activeTab === 'settings'} className={`admin-tab-btn ${activeTab === 'settings' ? 'admin-tab-active' : ''}`} onClick={() => setActiveTab('settings')}>
+                                <span>Settings</span>
+                            </button>
                         </div>
+
+                        {activeTab === 'settings' && <SettingsEditor />}
 
                         {/* ========================================================
                             PROJECTS MANAGEMENT TAB
@@ -753,6 +850,12 @@ export default function Admin() {
                                                         onChange={handleProjectFormChange}
                                                     />
                                                 </div>
+                                            </label>
+
+                                            <label className="admin-field">
+                                                <span>Upload project image (JPEG, PNG or WebP, max 10 MiB)</span>
+                                                <input key={imageInputKey} type="file" accept="image/jpeg,image/png,image/webp" disabled={isSaving} onChange={(event) => setProjectImageFile(event.target.files?.[0] ?? null)} />
+                                                <small>The selected file is uploaded when you save the project and replaces the image URL.</small>
                                             </label>
 
                                             <label className="admin-field admin-field-wide">

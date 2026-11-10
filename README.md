@@ -38,4 +38,16 @@ The project manager is available locally at `http://localhost:5173/#/admin` and 
 4. Copy the admin account's UUID from **Authentication → Users** and run the example `INSERT` at the bottom of the SQL script with that UUID. Keep admin allowlist changes restricted to the Supabase dashboard/SQL Editor.
 5. Open `/#/admin`, sign in, and create, edit, or delete project records. Deletion asks for confirmation.
 
+6. Your supplied schema does not include `public.portfolio_settings`. Run `supabase/portfolio-settings.sql` in the SQL Editor after `supabase/admin.sql` to create it. The Portfolio tab can then edit profile content, skills, contact information, social links, and the CV URL. The settings are publicly readable and only allowlisted admins can write them; do not put private information in them. Populate the settings in the admin page: absent database content is not replaced with local personal details.
+
+For the CV, upload a PDF through the admin page or enter a public HTTPS link to a hosted file. The link opens the file; whether it downloads immediately depends on the hosting server's `Content-Disposition` headers and the visitor's browser.
+
 RLS is the security boundary; hiding the admin interface is not authorization. Keep the allowlist private, never grant anonymous writes, and verify policies after changes. If a browser request fails, inspect the browser console and Supabase Auth/database logs without sharing credentials.
+
+## Portfolio file storage
+
+After `supabase/admin.sql` and adding an admin, review existing `storage.objects` policies, then run `supabase/portfolio-storage.sql` in the SQL Editor. It creates or updates the public `portfolio-cvs` and `portfolio-project-images` buckets and their policies. Public files are readable by anyone; authenticated allowlisted admins can insert, update, and delete. Restrictive policies prevent existing permissive policies from granting `anon` or non-admin `authenticated` users writes to these buckets, while leaving other buckets alone. Review any custom database roles and policies separately. Re-running the migration updates its own policies and bucket settings.
+
+`uploadCv(supabase, file)` and `uploadProjectImage(supabase, file)` from `utils/portfolio-uploads.js` accept the signed-in Supabase client and a browser `File`, and resolve to its public URL or throw on validation/upload failure. CVs accept `application/pdf` up to 5 MiB; images accept `image/jpeg`, `image/png`, or `image/webp` up to 10 MiB. Empty files are rejected. Paths use random UUIDs rather than user filenames, and uploads never overwrite existing files. The admin page saves the resulting URLs as `cv_url` or `image_url`.
+
+Bucket MIME and size limits apply on the server as well as in the helper, but MIME types are supplied by the uploader and do not verify file contents. Only trusted admins should upload, and public URLs must not contain confidential documents. Replacing a URL does not delete old objects; manage unused files in the Supabase dashboard. Test anonymous, non-admin, and admin access against your own Supabase project after applying the migration.
