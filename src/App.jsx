@@ -11,7 +11,7 @@ import {
   BootOverlay as Boot,
 } from "./components/Ambient.jsx";
 import Terminal from "./components/Terminal.jsx";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import "./Portfolio.css";
 
 function SectionHeading({ number, title, reducedMotion }) {
@@ -711,6 +711,7 @@ export default function App() {
           <a href="#top">BACK TO TOP ↑</a>
         </div>
       </footer>
+      <Analytics />
     </div>
   );
 }
